@@ -1,0 +1,19 @@
+import type { BindingMatchContext } from "@/lib/scene/types";
+import type { MatchStatus, Team } from "@/types/match";
+
+export interface LocalMatch { id:string; competitionName:string; venue:string; kickoff:string; homeTeamName:string; homeTeamShortName:string; homeTeamScore:number; awayTeamName:string; awayTeamShortName:string; awayTeamScore:number; createdAt:string; updatedAt:string; }
+export interface MatchState { matches: LocalMatch[]; activeMatchId: string | null; }
+export interface BrandKit { clubName:string; primaryColour:string; secondaryColour:string; lightColour:string; darkColour:string; defaultFontFamily:string; clubLogoUrl:string; }
+export const MATCHES_KEY="matchforge.matches.v1"; export const BRAND_KEY="matchforge.brandKit.v1";
+export const defaultBrandKit: BrandKit={clubName:"Gala Rugby",primaryColour:"#8F1738",secondaryColour:"#F5F0F1",lightColour:"#FFFFFF",darkColour:"#090A0C",defaultFontFamily:"Inter, Arial, sans-serif",clubLogoUrl:"/matchforge-mark.svg"};
+export const defaultMatchState: MatchState={matches:[],activeMatchId:null};
+export function makeMatch(): LocalMatch { const now=new Date().toISOString(); return {id:`match-${Date.now()}-${Math.random().toString(16).slice(2)}`,competitionName:"Scottish Premiership",venue:"Netherdale",kickoff:new Date().toISOString().slice(0,16),homeTeamName:"Gala RFC",homeTeamShortName:"GALA",homeTeamScore:0,awayTeamName:"Boroughmuir RFC",awayTeamShortName:"BOR",awayTeamScore:0,createdAt:now,updatedAt:now}; }
+function safeParse<T>(raw:string|null, fallback:T, guard:(v:unknown)=>v is T):T{ if(!raw)return fallback; try{const parsed:unknown=JSON.parse(raw); return guard(parsed)?parsed:fallback;}catch{return fallback;} }
+export function isMatchState(v:unknown): v is MatchState { return typeof v==="object"&&v!==null&&Array.isArray((v as {matches?:unknown}).matches)&&("activeMatchId" in v); }
+export function isBrandKit(v:unknown): v is BrandKit { const b=v as Partial<BrandKit>; return typeof v==="object"&&v!==null&&[b.clubName,b.primaryColour,b.secondaryColour,b.lightColour,b.darkColour,b.defaultFontFamily,b.clubLogoUrl].every((x)=>typeof x==="string"); }
+export function loadMatches(storage: Pick<Storage,"getItem">=localStorage): MatchState { return safeParse(storage.getItem(MATCHES_KEY), defaultMatchState, isMatchState); }
+export function saveMatches(state:MatchState, storage: Pick<Storage,"setItem">=localStorage){ storage.setItem(MATCHES_KEY, JSON.stringify(state)); }
+export function loadBrandKit(storage: Pick<Storage,"getItem">=localStorage): BrandKit { return safeParse(storage.getItem(BRAND_KEY), defaultBrandKit, isBrandKit); }
+export function saveBrandKit(brand:BrandKit, storage: Pick<Storage,"setItem">=localStorage){ storage.setItem(BRAND_KEY, JSON.stringify(brand)); }
+export function activeMatchContext(match: LocalMatch | undefined, elapsedSeconds=0, status:MatchStatus="live"): BindingMatchContext { const mins=Math.floor(elapsedSeconds/60), secs=elapsedSeconds%60; return {match:{homeTeam:{name:match?.homeTeamName??"Gala RFC",shortName:match?.homeTeamShortName??"GALA",score:match?.homeTeamScore??0},awayTeam:{name:match?.awayTeamName??"Boroughmuir RFC",shortName:match?.awayTeamShortName??"BOR",score:match?.awayTeamScore??0},clock:`${mins}:${secs.toString().padStart(2,"0")}`,status},competition:{name:match?.competitionName??"Competition"},venue:{name:match?.venue??"Venue"}}; }
+export function teamFromMatch(match:LocalMatch|undefined, side:"home"|"away", fallback:Team): Team { if(!match)return fallback; return side==="home"?{...fallback,name:match.homeTeamName,shortName:match.homeTeamShortName,score:match.homeTeamScore,monogram:match.homeTeamShortName.slice(0,1)||"H"}:{...fallback,name:match.awayTeamName,shortName:match.awayTeamShortName,score:match.awayTeamScore,monogram:match.awayTeamShortName.slice(0,1)||"A"}; }

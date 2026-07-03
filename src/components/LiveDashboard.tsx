@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   CircleDot,
   Clock3,
@@ -66,12 +67,10 @@ export function LiveDashboard() {
   } = useMatchStore();
 
   return (
-    <aside className="flex h-screen w-[354px] shrink-0 flex-col border-l border-zinc-200 bg-white">
+    <aside className="flex h-full w-[354px] shrink-0 flex-col border-l border-zinc-200 bg-white">
       <div className="flex h-16 items-end gap-7 border-b border-zinc-100 px-5">
-        <button className="h-12 text-xs font-medium text-zinc-400">Design</button>
-        <button className="h-12 border-b-2 border-zinc-950 text-xs font-semibold text-zinc-950">
-          Dashboard
-        </button>
+        <Link href="/editor" className="h-12 pt-4 text-xs font-medium text-zinc-400">Design</Link>
+        <Link href="/dashboard" className="h-12 border-b-2 border-zinc-950 pt-4 text-xs font-semibold text-zinc-950">Dashboard</Link>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
@@ -91,9 +90,7 @@ export function LiveDashboard() {
         <section className="border-b border-zinc-100 pb-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xs font-semibold text-zinc-900">Match Info</h2>
-            <button className="rounded-md border border-zinc-200 px-2 py-1 text-[10px] text-zinc-500 hover:bg-zinc-50">
-              Edit
-            </button>
+            <Link href="/matches" className="rounded-md border border-zinc-200 px-2 py-1 text-[10px] text-zinc-500 hover:bg-zinc-50">Edit</Link>
           </div>
 
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">

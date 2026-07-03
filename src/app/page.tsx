@@ -1,5 +1,2 @@
-import { MatchforgeApp } from "@/components/MatchforgeApp";
-
-export default function Home() {
-  return <MatchforgeApp />;
-}
+import { redirect } from "next/navigation";
+export default function Home(){ redirect("/dashboard"); }

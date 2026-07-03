@@ -1,17 +1,30 @@
 # Matchforge MVP
 
-A runnable prototype of a modular sports matchday graphics editor and live match dashboard.
+Matchforge is a focused sports matchday graphics product for turning live rugby events into publishable graphics quickly.
 
-![Matchforge editor reference](docs/editor-reference.png)
+## Available routes
 
-## Included
-- Sleek desktop editor shell
-- Live rugby match clock and scoring controls
-- Moment graphics for tries, conversions, penalties, cards, half-time and full-time
-- Match event timeline
-- Scene queue
-- Brand accent customisation
-- Browser-side PNG export
+- `/dashboard` - live match dashboard, event controls, generated graphic preview, and links to edit templates, matches, and brand settings.
+- `/templates` - local template library for Try, Score Update, Half Time, Full Time, Yellow Card, and Red Card scene documents.
+- `/editor` - local graphics editor with scene, layer, canvas, properties, autosave, undo/redo, and PNG export.
+- `/matches` - local match management and active-match selection.
+- `/brand-kit` - local club brand kit editor and preview.
+
+## Editor capabilities
+
+The editor uses the serialized scene document as the source of truth. It supports text, data-text, image, rectangle, ellipse, and line rendering; layer selection; dragging; property editing; visibility and lock toggles; duplicate/delete; layer addition; scene duplication, renaming, deletion, and blank-scene creation; undo/redo; and native-resolution PNG export through `html-to-image`.
+
+## Local persistence
+
+Editor projects are autosaved to `localStorage` under `matchforge.editor.project.v1` after a short debounce and restored on refresh after runtime scene validation. Matches and the active match are stored under `matchforge.matches.v1`. Brand-kit values are stored under `matchforge.brandKit.v1`. Invalid project JSON is rejected safely and the built-in sample project is restored without overwriting template definitions.
+
+## Current limitations
+
+- No authentication, Supabase, cloud sync, payments, or social publishing.
+- No upload pipeline; image layers accept URLs only.
+- The editor canvas is a DOM artboard rather than the planned React Konva renderer.
+- No animation or video export.
+- Brand-kit values are persisted and previewed, but existing template colours are not force-updated.
 
 ## Run locally
 
@@ -20,38 +33,15 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000` in Chrome or Edge.
+Open `http://localhost:3000/dashboard` in Chrome or Edge.
 
-## Production check
+## Test and production checks
 
 ```bash
 npm run lint
+npm run test
 npm run build
 npm start
 ```
 
-## Recommended production stack
-- Next.js App Router
-- React Konva for the full layer-based editor
-- Zustand for local editor state
-- Supabase for Auth, Postgres, Storage and Row Level Security
-- Vercel for deployment
-
-## Current limitations
-This is an interactive front-end MVP. Data is stored in memory and resets on refresh. The graphic is currently composed from DOM layers; the roadmap replaces this with a serialized canvas document model before multi-user production use.
-
 See `AGENTS.md` before giving the repository to Codex. It contains the architecture rules and implementation order.
-
-## Windows installation notes
-
-Use Node.js 20.9 or newer. For the most reliable Windows setup, keep the project outside a OneDrive-synchronised folder, for example `C:\Dev\matchforge-mvp`.
-
-You can run `setup.cmd`, or install manually:
-
-```bat
-npm config set registry https://registry.npmjs.org/
-npm install
-npm run dev
-```
-
-If an earlier installation failed, close VS Code and any Node processes, delete `node_modules`, then run the commands again.

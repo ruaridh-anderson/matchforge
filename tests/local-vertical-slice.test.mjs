@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const local = readFileSync(new URL('../src/lib/localData.ts', import.meta.url),'utf8');
+const persist = readFileSync(new URL('../src/lib/scene/projectPersistence.ts', import.meta.url),'utf8');
+const editor = readFileSync(new URL('../src/components/app/EditorPage.tsx', import.meta.url),'utf8');
+test('navigation routes are implemented',()=>{ for (const r of ['/dashboard','/templates','/editor','/matches','/brand-kit']) assert.match(readFileSync(new URL('../src/components/app/AppShell.tsx', import.meta.url),'utf8'), new RegExp(r)); });
+test('templates can open in editor',()=>{ assert.match(readFileSync(new URL('../src/app/templates/page.tsx', import.meta.url),'utf8'), /TEMPLATE_OPEN_KEY/); assert.match(editor,/sessionStorage\.getItem\(TEMPLATE_OPEN_KEY\)/); });
+test('text layer editing and add remove controls exist',()=>{ assert.match(editor,/Content/); assert.match(editor,/Colour/); assert.match(editor,/add\(t\)/); assert.match(editor,/removeLayer/); });
+test('local project persistence and corruption handling exist',()=>{ assert.match(persist,/restoreProject/); assert.match(persist,/Invalid stored project/); assert.match(editor,/saveProject/); });
+test('active match and brand kit persistence exist',()=>{ assert.match(local,/MATCHES_KEY/); assert.match(local,/BRAND_KEY/); assert.match(local,/activeMatchId/); });
+test('undo after drag creates a committed history entry on drag end',()=>{ assert.match(editor,/onDragEnd/); assert.match(editor,/commitHistory/); assert.match(editor,/undoHistory/); });
+test('PNG export helper is wired to html-to-image',()=>{ assert.match(editor,/toPng/); assert.match(editor,/Export PNG/); });

@@ -113,6 +113,7 @@ interface MatchStore {
   selectQueuedScene: (id: string) => void;
   clearQueue: () => void;
   resetMatch: () => void;
+  applyLocalMatch: (homePatch: Partial<Team>, awayPatch: Partial<Team>) => void;
 }
 
 function sceneFrom(
@@ -303,6 +304,8 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
 
   clearQueue: () => set({ queue: [] }),
 
+  applyLocalMatch: (homePatch, awayPatch) => set((state) => ({ home: { ...state.home, ...homePatch }, away: { ...state.away, ...awayPatch } })),
+
   resetMatch: () => {
     const scene = sceneFrom("kick-off", initialHome, initialAway, "", 0);
     set({
@@ -316,8 +319,8 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       activeGraphic: scene,
       events: [],
       queue: [scene],
-      sceneProject: { ...sampleProjectDocument, activeSceneId: getTemplateForGraphic("kick-off").id },
-      sceneHistory: createHistory(getTemplateForGraphic("kick-off")),
+      sceneProject: { ...sampleProjectDocument, activeSceneId: getTemplateForGraphic("score-update").id },
+      sceneHistory: createHistory(getTemplateForGraphic("score-update")),
     });
   },
 }));

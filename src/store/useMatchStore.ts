@@ -11,7 +11,8 @@ import type {
 } from "@/types/match";
 import { commitHistory, createHistory, redoHistory, undoHistory, type HistoryState } from "@/lib/scene/history";
 import { getTemplateForGraphic, sampleProjectDocument } from "@/lib/scene/templates";
-import type { ProjectDocument, SceneDocument } from "@/lib/scene/types";
+import type { ProjectDocument, SceneDocument, SceneLayer } from "@/lib/scene/types";
+import { addLayer, duplicateLayer, removeLayer, reorderLayer, toggleLayerLocked, toggleLayerVisibility, updateLayer } from "@/lib/scene/operations";
 
 const pointsFor: Partial<Record<GraphicType, number>> = {
   try: 5,
@@ -90,6 +91,16 @@ interface MatchStore {
   queue: GraphicScene[];
   sceneProject: ProjectDocument;
   sceneHistory: HistoryState<SceneDocument>;
+  selectedLayerId: string | null;
+  selectScene: (sceneId: string) => void;
+  selectLayer: (layerId: string | null) => void;
+  addSceneLayer: (layer: SceneLayer) => void;
+  updateSceneLayer: (layerId: string, patch: Partial<SceneLayer>) => void;
+  removeSceneLayer: (layerId: string) => void;
+  duplicateSceneLayer: (layerId: string) => void;
+  reorderSceneLayer: (layerId: string, zIndex: number) => void;
+  toggleSceneLayerVisibility: (layerId: string) => void;
+  toggleSceneLayerLocked: (layerId: string) => void;
   undoScene: () => void;
   redoScene: () => void;
   setSelectedTeam: (team: TeamSide) => void;
@@ -162,6 +173,21 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
   queue: [initialScene],
   sceneProject: sampleProjectDocument,
   sceneHistory: createHistory(initialSceneDocument),
+  selectedLayerId: null,
+
+  selectScene: (sceneId) => {
+    const state = get();
+    const scene = state.sceneProject.scenes.find((item) => item.id === sceneId);
+    if (scene) set({ sceneProject: { ...state.sceneProject, activeSceneId: sceneId }, sceneHistory: commitHistory(state.sceneHistory, scene), selectedLayerId: null });
+  },
+  selectLayer: (selectedLayerId) => set({ selectedLayerId }),
+  addSceneLayer: (layer) => set((state) => ({ sceneHistory: commitHistory(state.sceneHistory, addLayer(state.sceneHistory.present, layer)), selectedLayerId: layer.id })),
+  updateSceneLayer: (layerId, patch) => set((state) => ({ sceneHistory: commitHistory(state.sceneHistory, updateLayer(state.sceneHistory.present, layerId, patch)) })),
+  removeSceneLayer: (layerId) => set((state) => ({ sceneHistory: commitHistory(state.sceneHistory, removeLayer(state.sceneHistory.present, layerId)), selectedLayerId: state.selectedLayerId === layerId ? null : state.selectedLayerId })),
+  duplicateSceneLayer: (layerId) => set((state) => ({ sceneHistory: commitHistory(state.sceneHistory, duplicateLayer(state.sceneHistory.present, layerId)) })),
+  reorderSceneLayer: (layerId, zIndex) => set((state) => ({ sceneHistory: commitHistory(state.sceneHistory, reorderLayer(state.sceneHistory.present, layerId, zIndex)) })),
+  toggleSceneLayerVisibility: (layerId) => set((state) => ({ sceneHistory: commitHistory(state.sceneHistory, toggleLayerVisibility(state.sceneHistory.present, layerId)) })),
+  toggleSceneLayerLocked: (layerId) => set((state) => ({ sceneHistory: commitHistory(state.sceneHistory, toggleLayerLocked(state.sceneHistory.present, layerId)) })),
 
   undoScene: () => set((state) => ({ sceneHistory: undoHistory(state.sceneHistory) })),
   redoScene: () => set((state) => ({ sceneHistory: redoHistory(state.sceneHistory) })),

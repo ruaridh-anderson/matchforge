@@ -9,6 +9,9 @@ import type {
   Team,
   TeamSide,
 } from "@/types/match";
+import { commitHistory, createHistory, redoHistory, undoHistory, type HistoryState } from "@/lib/scene/history";
+import { getTemplateForGraphic, sampleProjectDocument } from "@/lib/scene/templates";
+import type { ProjectDocument, SceneDocument } from "@/lib/scene/types";
 
 const pointsFor: Partial<Record<GraphicType, number>> = {
   try: 5,
@@ -85,6 +88,10 @@ interface MatchStore {
   activeGraphic: GraphicScene;
   events: MatchEvent[];
   queue: GraphicScene[];
+  sceneProject: ProjectDocument;
+  sceneHistory: HistoryState<SceneDocument>;
+  undoScene: () => void;
+  redoScene: () => void;
   setSelectedTeam: (team: TeamSide) => void;
   setSelectedPlayer: (player: string) => void;
   setAccent: (accent: string) => void;
@@ -139,6 +146,7 @@ const initialScene = sceneFrom(
   "Craig Keddie",
   67 * 60 + 23,
 );
+const initialSceneDocument = getTemplateForGraphic(initialScene.type);
 
 export const useMatchStore = create<MatchStore>((set, get) => ({
   home: initialHome,
@@ -152,6 +160,11 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
   activeGraphic: initialScene,
   events: seededEvents,
   queue: [initialScene],
+  sceneProject: sampleProjectDocument,
+  sceneHistory: createHistory(initialSceneDocument),
+
+  undoScene: () => set((state) => ({ sceneHistory: undoHistory(state.sceneHistory) })),
+  redoScene: () => set((state) => ({ sceneHistory: redoHistory(state.sceneHistory) })),
 
   setSelectedTeam: (selectedTeam) => set({ selectedTeam }),
   setSelectedPlayer: (selectedPlayer) => set({ selectedPlayer }),
@@ -166,14 +179,18 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
 
   setActiveGraphic: (type) => {
     const state = get();
+    const activeGraphic = sceneFrom(
+      type,
+      state.home,
+      state.away,
+      state.selectedPlayer,
+      state.elapsedSeconds,
+    );
+    const sceneDocument = getTemplateForGraphic(type);
     set({
-      activeGraphic: sceneFrom(
-        type,
-        state.home,
-        state.away,
-        state.selectedPlayer,
-        state.elapsedSeconds,
-      ),
+      activeGraphic,
+      sceneProject: { ...state.sceneProject, activeSceneId: sceneDocument.id },
+      sceneHistory: commitHistory(state.sceneHistory, sceneDocument),
     });
   },
 
@@ -240,12 +257,22 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       activeGraphic: scene,
       events: [event, ...state.events].slice(0, 30),
       queue: [...state.queue, scene].slice(-8),
+      sceneProject: { ...state.sceneProject, activeSceneId: getTemplateForGraphic(type).id },
+      sceneHistory: commitHistory(state.sceneHistory, getTemplateForGraphic(type)),
     });
   },
 
   selectQueuedScene: (id) => {
     const scene = get().queue.find((item) => item.id === id);
-    if (scene) set({ activeGraphic: scene });
+    if (scene) {
+      const sceneDocument = getTemplateForGraphic(scene.type);
+      const state = get();
+      set({
+        activeGraphic: scene,
+        sceneProject: { ...state.sceneProject, activeSceneId: sceneDocument.id },
+        sceneHistory: commitHistory(state.sceneHistory, sceneDocument),
+      });
+    }
   },
 
   clearQueue: () => set({ queue: [] }),
@@ -263,6 +290,8 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       activeGraphic: scene,
       events: [],
       queue: [scene],
+      sceneProject: { ...sampleProjectDocument, activeSceneId: getTemplateForGraphic("kick-off").id },
+      sceneHistory: createHistory(getTemplateForGraphic("kick-off")),
     });
   },
 }));

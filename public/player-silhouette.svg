@@ -1,0 +1,19 @@
+<svg width="720" height="1000" viewBox="0 0 720 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="body" x1="230" y1="160" x2="550" y2="930" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5F5F5"/>
+      <stop offset="1" stop-color="#7F858B"/>
+    </linearGradient>
+    <filter id="shadow" x="50" y="30" width="640" height="960" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+  <path opacity=".25" filter="url(#shadow)" d="M420 110c-73 0-126 49-126 119 0 32 11 61 31 82-76 26-139 83-168 164l-55 154 111 40 39-88-11 315h380l-29-330 42 92 94-44-65-148c-34-77-97-132-166-156 18-21 29-50 29-81 0-70-53-119-126-119z" fill="#000"/>
+  <path d="M421 84c-63 0-109 43-109 104 0 61 46 109 109 109s109-48 109-109c0-61-46-104-109-104z" fill="url(#body)"/>
+  <path d="M323 291c-78 25-139 87-168 166L98 614l116 44 63-143-20 396h344l-25-401 69 147 111-51-69-154c-35-77-95-134-171-160-22 29-56 48-95 48-41 0-76-18-98-49z" fill="url(#body)"/>
+  <path d="M275 468h292l15 85H261l14-85z" fill="#141519" opacity=".8"/>
+  <path d="M283 575h287l9 62H273l10-62z" fill="#141519" opacity=".68"/>
+  <path d="M292 683h279l5 50H286l6-50z" fill="#141519" opacity=".48"/>
+  <path d="M368 389h105v105H368z" fill="#8F1738" opacity=".95"/>
+  <path d="M389 414h63v13h-63zm0 24h63v13h-63zm0 24h42v13h-42z" fill="white" opacity=".92"/>
+</svg>
